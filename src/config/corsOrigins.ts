@@ -28,7 +28,19 @@ export function allowedCorsOrigins(): string[] {
   return [...set];
 }
 
+function isVercelAppOrigin(origin: string): boolean {
+  try {
+    const url = new URL(origin);
+    return url.protocol === "https:" && url.hostname.endsWith(".vercel.app");
+  } catch {
+    return false;
+  }
+}
+
 export function isAllowedCorsOrigin(origin: string | undefined): boolean {
   if (!origin) return true;
-  return allowedCorsOrigins().includes(origin);
+  if (allowedCorsOrigins().includes(origin)) return true;
+  if (env.corsExtraOrigins.includes(origin)) return true;
+  if (env.corsAllowVercelApp && isVercelAppOrigin(origin)) return true;
+  return false;
 }

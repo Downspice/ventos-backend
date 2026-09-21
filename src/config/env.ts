@@ -39,8 +39,10 @@ export const env = {
     storageBucket: optional("SUPABASE_STORAGE_BUCKET", "ventos"),
   },
 
-  /** Base URL for locally served uploads when Supabase is not configured (dev). */
-  publicApiUrl: optional("PUBLIC_API_URL"),
+  /** Base URL for upload links (set to deployed API origin on Vercel). */
+  publicApiUrl:
+    optional("PUBLIC_API_URL") ||
+    (optional("VERCEL_URL") ? `https://${optional("VERCEL_URL")}` : ""),
 
   resend: {
     apiKey: optional("RESEND_API_KEY"),
@@ -51,10 +53,25 @@ export const env = {
     webUrl: optional("CLIENT_WEB_URL", "http://127.0.0.1:5173"),
     adminUrl: optional("CLIENT_ADMIN_URL", "http://127.0.0.1:5174"),
   },
+
+  /** Comma-separated extra browser origins for CORS (e.g. Vercel preview URLs). */
+  corsExtraOrigins: optional("CORS_EXTRA_ORIGINS")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean),
+
+  /** Allow any https://*.vercel.app origin (typical for Preview / test frontends). */
+  corsAllowVercelApp:
+    optional("CORS_ALLOW_VERCEL", process.env.VERCEL ? "true" : "false") === "true",
+
+  vercelEnv: optional("VERCEL_ENV"),
+  vercelUrl: optional("VERCEL_URL"),
 } as const;
 
 export function assertProductionSecrets(): void {
-  if (!env.isProduction) return;
+  const onVercelProduction =
+    env.vercelEnv === "production" || (env.isProduction && Boolean(process.env.VERCEL));
+  if (!onVercelProduction) return;
   required("JWT_SECRET");
   required("MONGODB_URI");
 }

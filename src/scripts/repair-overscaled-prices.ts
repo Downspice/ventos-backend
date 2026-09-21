@@ -13,7 +13,7 @@ import { Business } from "../models/Business.js";
 const MAJOR_CEILING = 1_000_000; // 10k GHS/USD in minor units without repair
 
 async function main() {
-  await mongoose.connect(env.MONGODB_URI);
+  await mongoose.connect(env.mongodbUri);
   const businesses = await Business.find({ monetaryStorageMinor: { $ne: false } });
   for (const b of businesses) {
     const products = await Product.find({ businessId: b._id });

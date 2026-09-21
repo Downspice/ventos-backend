@@ -3,7 +3,7 @@ import { Product } from "../models/catalog.js";
 import { PaymentChannel } from "../models/paymentChannel.js";
 import { Payment, RegisterSession, Sale, type ISaleLine } from "../models/sales.js";
 import { notDeletedFilter } from "../models/shared/documentLifecycle.js";
-import { computeSaleTax, type TaxRuleLike } from "./tax.service.js";
+import { computeSaleTax, type TaxApplicationMode, type TaxRuleLike } from "./tax.service.js";
 import { CommissionEntry, CommissionRule } from "../models/appointments.js";
 import { CustomerLoyaltyBalance, LoyaltyRule } from "../models/loyalty.js";
 import { Notification } from "../models/notifications.js";

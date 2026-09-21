@@ -32,7 +32,10 @@ export function createApp() {
     res.json({ status: "ok" });
   });
 
-  app.use("/uploads", express.static(getLocalUploadsRoot()));
+  // Local disk uploads are not available on Vercel serverless — use Supabase in cloud envs.
+  if (!process.env.VERCEL) {
+    app.use("/uploads", express.static(getLocalUploadsRoot()));
+  }
 
   app.use("/auth", authRateLimiter, authRouter);
 
