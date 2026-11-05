@@ -13,6 +13,7 @@
     "lint": "tsc --noEmit",
     "seed:dev-users": "tsx src/scripts/seed-dev-users.ts",
     "seed:demo-catalog": "tsx src/scripts/seed-demo-catalog.ts",
+    "seed:apparel-demo": "tsx src/scripts/seed-apparel-demo.ts",
     "assign:avatar-presets": "tsx src/scripts/assign-avatar-presets.ts"
   },
   "engines": {
