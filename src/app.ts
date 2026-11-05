@@ -7,22 +7,37 @@ import { authRouter } from "./routes/auth.routes.js";
 import { authRateLimiter, graphqlRateLimiter } from "./middleware/rateLimit.js";
 import { getLocalUploadsRoot } from "./services/storage.service.js";
 
+const corsOptions: cors.CorsOptions = {
+  origin(origin, callback) {
+    if (isAllowedCorsOrigin(origin)) {
+      callback(null, true);
+    } else {
+      console.warn(`[CORS] Blocked request from origin: ${origin}`);
+      callback(null, false);
+    }
+  },
+  credentials: true,
+  methods: ["GET", "HEAD", "PUT", "PATCH", "POST", "DELETE", "OPTIONS"],
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization",
+    "X-Requested-With",
+    "Accept",
+    "Apollo-Require-Preflight",
+  ],
+  maxAge: 86400,
+};
+
 export function createApp() {
   const app = express();
   app.set("trust proxy", true);
 
-  app.use(
-    cors({
-      origin(origin, callback) {
-        if (isAllowedCorsOrigin(origin)) {
-          callback(null, true);
-        } else {
-          callback(null, false);
-        }
-      },
-      credentials: true,
-    }),
-  );
+  // Enable CORS middleware for all routes
+  app.use(cors(corsOptions));
+
+  // Explicitly handle preflight OPTIONS across all routes
+  app.options("*", cors(corsOptions));
+
   app.use(express.json({ limit: "2mb" }));
 
   configurePassport();
@@ -40,6 +55,21 @@ export function createApp() {
   app.use("/auth", authRateLimiter, authRouter);
 
   app.use("/graphql", graphqlRateLimiter);
+
+  // Global error handler preserving CORS headers
+  app.use((err: any, req: express.Request, res: express.Response, _next: express.NextFunction) => {
+    console.error("Unhandled express error:", err);
+    const origin = req.headers.origin;
+    if (origin && isAllowedCorsOrigin(origin)) {
+      res.setHeader("Access-Control-Allow-Origin", origin);
+      res.setHeader("Access-Control-Allow-Credentials", "true");
+    }
+    const status = typeof err.status === "number" ? err.status : 500;
+    res.status(status).json({
+      error: "Internal Server Error",
+      message: err.message || "An unexpected error occurred",
+    });
+  });
 
   return app;
 }
