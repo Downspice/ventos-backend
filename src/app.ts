@@ -32,11 +32,8 @@ export function createApp() {
   const app = express();
   app.set("trust proxy", true);
 
-  // Enable CORS middleware for all routes
+  // Enable CORS middleware for all routes (including OPTIONS preflights)
   app.use(cors(corsOptions));
-
-  // Explicitly handle preflight OPTIONS across all routes
-  app.options("*", cors(corsOptions));
 
   app.use(express.json({ limit: "2mb" }));
 
